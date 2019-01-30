@@ -1,9 +1,18 @@
 package problems;
 
+/**
+ * Time complexity: O(n) for iterative implementation, O(Log n) for recursive
+ * implementation. </br>
+ * Space complexity: O(n2) for both implementations and a call stack for the
+ * recursive one. </br>
+ * Description: iterate through the string in inverse order and append each
+ * character to a new string, or extract the last character from the string
+ * recursively.
+ */
 public class StringReverse {
 
 	public static void main(String[] args) {
-		System.out.println(reverse("avaj"));
+		System.out.println(reverse("avaj") + rreverse("dlrow "));
 	}
 
 	/**
