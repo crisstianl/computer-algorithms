@@ -18,48 +18,54 @@ public class BinaryTree<E extends Comparable<E>> {
 		}
 	}
 
+	/**
+	 * Traverse the tree in level order and add the new value in the first empty
+	 * place
+	 */
 	public BinaryTree<E> add(E newValue) {
 		if (this.root == null) {
 			this.root = new Node<E>(newValue);
 		} else {
-			add(this.root, newValue, height());
+			java.util.Queue<Node<E>> q = new java.util.LinkedList<Node<E>>();
+			q.add(this.root);
+
+			// Do level order traversal until we find an empty place.
+			while (!q.isEmpty()) {
+				Node<E> temp = q.poll();
+
+				// enqueue left child
+				if (temp.left != null) {
+					q.add(temp.left);
+				} else {
+					temp.left = new Node<E>(newValue);
+					break;
+				}
+
+				// enqueue right child
+				if (temp.right != null) {
+					q.add(temp.right);
+				} else {
+					temp.right = new Node<E>(newValue);
+					break;
+				}
+			}
 		}
 		return this;
 	}
 
-	static <E extends Comparable<E>> void add(Node<E> node, E newValue, int level) {
-		if (node == null) {
-			return;
-		} else if (level == 1) {
-			if (node.left == null) {
-				node.left = new Node<E>(newValue);
-			} else if (node.right == null) {
-				node.right = new Node<E>(newValue);
+	/**
+	 * Traverse the tree in preorder and return true if the value is found
+	 */
+	static <E extends Comparable<E>> boolean search(Node<E> node, E value) {
+		boolean retValue = false;
+		if (node != null) {
+			if (node.value.equals(value)) {
+				retValue = true;
+			} else {
+				retValue = search(node.left, value) || search(node.right, value);
 			}
-		} else if (level > 1) {
-			add(node.left, newValue, level - 1);
-			add(node.right, newValue, level - 1);
 		}
-	}
-
-	public E search(E value) {
-		return search(this.root, value);
-	}
-
-	static <E extends Comparable<E>> E search(Node<E> node, E value) {
-		if (node == null) { // value not found
-			return null;
-		} else if (value.equals(node.value)) { // value matches the current node
-			return node.value;
-		} else if (value.compareTo(node.value) < 0) { // value less than current node hence search the left subtree
-			return search(node.left, value);
-		} else { // value bigger than current node hence search the right subtree
-			return search(node.right, value);
-		}
-	}
-
-	public int height() {
-		return height(this.root);
+		return retValue;
 	}
 
 	/**
@@ -76,12 +82,29 @@ public class BinaryTree<E extends Comparable<E>> {
 	}
 
 	/**
-	 * Breadth first traversal, the three is traversed from left to right on each
-	 * level
+	 * Breadth first traversal, the three is traversed level by level from left to
+	 * right
 	 */
-	static <E extends Comparable<E>> void bfs(Node<E> node, int height) {
-		for (int i = 1; i <= height; i++) {
-			print(node, i);
+	static <E extends Comparable<E>> void bfs(Node<E> node) {
+		if (node != null) {
+			java.util.Queue<Node<E>> q = new java.util.LinkedList<Node<E>>();
+			q.add(node);
+
+			// Do level order traversal until we find an empty place.
+			while (!q.isEmpty()) {
+				Node<E> temp = q.poll();
+				System.out.print(temp.value + " ");
+
+				// enqueue left child
+				if (temp.left != null) {
+					q.add(temp.left);
+				}
+
+				// enqueue right child
+				if (temp.right != null) {
+					q.add(temp.right);
+				}
+			}
 		}
 	}
 
@@ -123,28 +146,93 @@ public class BinaryTree<E extends Comparable<E>> {
 
 	public void print() {
 		int h = height(this.root);
-		for (int i = 1; i <= h; i++) {
-			// print indent spaces
-			for (int j = 1; j <= h - i; j++) {
-				System.out.print(" ");
-			}
-			print(this.root, i);
-			System.out.print("\n");
-		}
+		print(java.util.Collections.singletonList(this.root), 1, h);
 	}
 
 	/**
-	 * Print nodes at the given level
+	 * Print all nodes, starting from the root, with left and right paddings
 	 */
-	static <E extends Comparable<E>> void print(Node<E> node, int level) {
-		if (node == null) {
-			return;
-		} else if (level == 1) {
-			System.out.print(node.value + " ");
-		} else if (level > 1) {
-			print(node.left, level - 1);
-			print(node.right, level - 1);
+	static <E extends Comparable<E>> void print(java.util.List<Node<E>> nodes, int level, int maxLevel) {
+		// recursive stop condition, all nodes are null
+		boolean allNodesNull = true;
+		for (Object object : nodes) {
+			if (object != null) {
+				allNodesNull = false;
+				break;
+			}
 		}
+		if (allNodesNull) {
+			return;
+		}
+
+		int floor = maxLevel - level;
+		int endgeLines = (int) Math.pow(2, (Math.max(floor - 1, 0)));
+		int firstSpaces = (int) Math.pow(2, (floor)) - 1;
+		int betweenSpaces = (int) Math.pow(2, (floor + 1)) - 1;
+
+		// print white spaces
+		for (int k = 0; k < firstSpaces; k++) {
+			System.out.print(" ");
+		}
+
+		java.util.List<Node<E>> newNodes = new java.util.ArrayList<Node<E>>();
+		for (Node<E> node : nodes) {
+			if (node != null) {
+				System.out.print(node.value);
+				newNodes.add(node.left);
+				newNodes.add(node.right);
+			} else {
+				newNodes.add(null);
+				newNodes.add(null);
+				System.out.print(" ");
+			}
+
+			// print white spaces
+			for (int k = 0; k < betweenSpaces; k++) {
+				System.out.print(" ");
+			}
+		}
+		System.out.print("\n");
+
+		for (int i = 1; i <= endgeLines; i++) {
+			for (int j = 0; j < nodes.size(); j++) {
+				// print white spaces
+				for (int k = 0; k < (firstSpaces - i); k++) {
+					System.out.print(" ");
+				}
+
+				if (nodes.get(j) == null) {
+					// print white spaces
+					for (int k = 0; k < (endgeLines + endgeLines + i + 1); k++) {
+						System.out.print(" ");
+					}
+					continue;
+				}
+
+				if (nodes.get(j).left != null) {
+					System.out.print("/");
+				} else {
+					System.out.print(" ");
+				}
+				// print white spaces
+				for (int k = 0; k < (i + i - 1); k++) {
+					System.out.print(" ");
+				}
+
+				if (nodes.get(j).right != null) {
+					System.out.print("\\");
+				} else {
+					System.out.print(" ");
+				}
+				// print white spaces
+				for (int k = 0; k < (endgeLines + endgeLines - i); k++) {
+					System.out.print(" ");
+				}
+			}
+			System.out.print("\n");
+		}
+
+		print(newNodes, level + 1, maxLevel);
 	}
 
 	public static void main(String[] args) {
@@ -152,8 +240,11 @@ public class BinaryTree<E extends Comparable<E>> {
 		tree.add(1).add(2).add(3).add(4).add(5).add(6).add(7).add(8).add(9).add(10);
 		tree.print();
 
-		System.out.print("BFS: ");
-		bfs(tree.root, tree.height());
+		System.out.println("Search 7: " + search(tree.root, 7));
+		System.out.println("Search 17: " + search(tree.root, 17));
+
+		System.out.print("BFS order: ");
+		bfs(tree.root);
 
 		System.out.print("\nDFS preorder: ");
 		dfs_preorder(tree.root);
