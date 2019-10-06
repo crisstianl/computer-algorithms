@@ -1,4 +1,4 @@
-package gotcha;
+package java;
 
 public class TryFinally {
 
